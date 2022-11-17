@@ -2,11 +2,12 @@ package engine
 
 import (
 	"context"
+	"jdlv/engine/models"
 	"testing"
 )
 
 func TestInit(t *testing.T) {
-	INIT_GRID.toString()
+	models.CurrentGrid().String()
 }
 
 func TestActualize(t *testing.T) {

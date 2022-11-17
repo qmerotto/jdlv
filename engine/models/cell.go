@@ -1,4 +1,4 @@
-package engine
+package models
 
 import (
 	"math/rand"
@@ -39,27 +39,27 @@ func (c *Cell) initNeighbours() {
 	}
 
 	//NE
-	if c.row-1 >= 0 && c.column+1 < INIT_X {
+	if c.row-1 >= 0 && c.column+1 < InitX {
 		c.neighbours[1] = c.grid.Raw(c.row - 1).Column(c.column + 1)
 	}
 
 	//E
-	if c.column+1 < INIT_X {
+	if c.column+1 < InitX {
 		c.neighbours[2] = c.grid.Raw(c.row).Column(c.column + 1)
 	}
 
 	//SE
-	if c.row+1 < INIT_Y && c.column+1 < INIT_X {
+	if c.row+1 < InitY && c.column+1 < InitX {
 		c.neighbours[3] = c.grid.Raw(c.row + 1).Column(c.column + 1)
 	}
 
 	//S
-	if c.row+1 < INIT_Y {
+	if c.row+1 < InitY {
 		c.neighbours[4] = c.grid.Raw(c.row + 1).Column(c.column)
 	}
 
 	//SO
-	if c.row+1 < INIT_Y && c.column-1 >= 0 {
+	if c.row+1 < InitY && c.column-1 >= 0 {
 		c.neighbours[5] = c.grid.Raw(c.row + 1).Column(c.column - 1)
 	}
 
@@ -94,4 +94,19 @@ func (c *Cell) Neighbours() []*Cell {
 
 func (c *Cell) Alive() bool {
 	return c.State.Alive
+}
+
+func (c *Cell) Actualize(n int32) {
+
+	if n < 1 {
+		c.State.Alive = false
+	}
+
+	if !c.Alive() && n >= 3 {
+		c.State.Alive = true
+	}
+
+	if n >= 5 {
+		c.State.Alive = false
+	}
 }

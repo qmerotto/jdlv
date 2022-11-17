@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"jdlv/engine/models"
 	"sync"
 	"time"
 )
@@ -18,7 +19,7 @@ func Start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case t := <-ticker.C:
-				INIT_GRID.Actualize()
+				models.CurrentGrid().Actualize()
 				fmt.Println("Tick at", t)
 			}
 		}
