@@ -46,24 +46,13 @@ func (g *Grid) build() {
 	for y := 0; y < InitY; y++ {
 		g.Raws[y].Columns = make([]Column, InitX)
 		for x := 0; x < InitX; x++ {
-			g.Raws[y].Columns[x].Cell = &Cell{
-				row:    y,
-				column: x,
-				grid:   g}
+			g.Raws[y].Columns[x].Cell = DefaultCell(x, y, g)
 		}
 	}
-
-	for y := 0; y < InitY; y++ {
-		for x := 0; x < InitX; x++ {
-			g.Raws[y].Columns[x].Cell.initState(g)
-		}
-	}
-
-	g.Print()
 }
 
 func (g *Grid) Actualize() {
-	tmpGrid := g.Copy()
+	tmpGrid := g.copy()
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
@@ -102,7 +91,7 @@ func (g *Grid) String() string {
 	return s
 }
 
-func (g *Grid) Copy() *Grid {
+func (g *Grid) copy() *Grid {
 	tmpGrid := &Grid{}
 	tmpGrid.Raws = make([]Raw, InitY)
 

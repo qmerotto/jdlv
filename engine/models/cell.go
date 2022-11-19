@@ -18,6 +18,19 @@ type CellState struct {
 	Temperature int
 }
 
+func DefaultCell(x, y int, g *Grid) *Cell {
+	return &Cell{
+		row:    y,
+		column: x,
+		grid:   g,
+		State: CellState{
+			Alive:       false,
+			Fuel:        0,
+			Temperature: 20,
+		},
+	}
+}
+
 func (c *Cell) initState(grid *Grid) {
 	c.State = CellState{
 		Alive:       rand.Intn(2)%2 == 0,

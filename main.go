@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/beego/beego/v2/server/web"
+	"jdlv/engine"
+	"jdlv/server"
 )
 
 func main() {
@@ -10,6 +11,6 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	//go engine.Start(ctx)
-	web.Run("localhost")
+	go engine.Run(ctx)
+	server.Run(ctx)
 }
