@@ -6,8 +6,12 @@ import (
 	"github.com/beego/beego/v2/server/web"
 )
 
-func SetupRoutes() {
-	web.Router(
-		"/", &controllers.LoginController{},
-	)
+func init() {
+	setupRoutes()
+}
+
+func setupRoutes() {
+	web.
+		web.Router("/", &controllers.LoginController{}, "get:Log")
+	web.Router("/grid", &controllers.GridController{}, "get:Get,post:Post")
 }

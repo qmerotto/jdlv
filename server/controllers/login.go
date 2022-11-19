@@ -6,6 +6,6 @@ type LoginController struct {
 	web.Controller
 }
 
-func (l *LoginController) test() {
+func (l *LoginController) Log() {
 
 }

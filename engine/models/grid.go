@@ -20,8 +20,8 @@ type Column struct {
 
 var currentGrid *Grid
 
-var InitX = 10
-var InitY = 10
+var InitX = 100
+var InitY = 100
 
 func init() {
 	grid := NewGrid()
