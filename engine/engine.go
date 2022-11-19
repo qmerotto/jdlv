@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-var start = make(chan struct{}, 1)
-var stop = make(chan struct{}, 1)
+var start = make(chan struct{})
+var stop = make(chan struct{})
 var Running = false
 
 func Start() error {
@@ -46,7 +46,7 @@ func Run(ctx context.Context) {
 func work(ctx context.Context) {
 	fmt.Println("engine at work")
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 
 	for {
 		select {

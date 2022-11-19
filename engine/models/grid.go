@@ -4,22 +4,9 @@ import (
 	"fmt"
 )
 
-type Grid struct {
-	X    int
-	Y    int
-	Raws []Raw
-}
+type Grid [][]Cell
 
-type Raw struct {
-	Columns []Column
-}
-
-type Column struct {
-	Cell *Cell
-}
-
-var currentGrid *Grid
-
+var currentGrid = make(Grid, 0)
 var InitX = 100
 var InitY = 100
 
@@ -28,58 +15,61 @@ func init() {
 	grid.build()
 }
 
-func NewGrid() *Grid {
-	currentGrid = &Grid{
-		X: InitX,
-		Y: InitY,
+func NewGrid() Grid {
+	if len(currentGrid) > 0 {
+		return currentGrid
 	}
+
+	currentGrid = make(Grid, InitX)
+	for x := 0; x < InitX; x++ {
+		currentGrid[x] = make([]Cell, InitY)
+	}
+
 	return currentGrid
 }
 
-func CurrentGrid() *Grid {
+func CurrentGrid() Grid {
 	return currentGrid
 }
 
-func (g *Grid) build() {
-	g.Raws = make([]Raw, InitY)
-
-	for y := 0; y < InitY; y++ {
-		g.Raws[y].Columns = make([]Column, InitX)
-		for x := 0; x < InitX; x++ {
-			g.Raws[y].Columns[x].Cell = DefaultCell(x, y, g)
+func (g Grid) build() {
+	for x := 0; x < InitX; x++ {
+		for y := 0; y < InitY; y++ {
+			g[x][y] = DefaultCell(x, y, g)
 		}
 	}
+
+	for x := 0; x < InitX; x++ {
+		for y := 0; y < InitY; y++ {
+			g[x][y].initNeighbours()
+		}
+	}
+
+	fmt.Print("build\n")
+	fmt.Print(g.String())
 }
 
-func (g *Grid) Actualize() {
+func (g Grid) Actualize() {
 	tmpGrid := g.copy()
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
-			g.Raw(y).Column(x).Actualize(tmpGrid.Raw(y).Column(x).AliveNeighbours())
+			g[x][y].Actualize(tmpGrid[x][y].AliveNeighbours())
 		}
 	}
 	g.Print()
 }
 
-func (g *Grid) Raw(x int) *Raw {
-	return &g.Raws[x]
-}
-
-func (r *Raw) Column(y int) *Cell {
-	return r.Columns[y].Cell
-}
-
-func (g *Grid) Print() {
+func (g Grid) Print() {
 	fmt.Printf(g.String())
 }
 
-func (g *Grid) String() string {
+func (g Grid) String() string {
 	s := ""
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
-			if currentGrid.Raw(x).Column(y).State.Alive {
+			if currentGrid[x][y].State.Alive {
 				s = fmt.Sprintf("%s%s", s, "X")
 			} else {
 				s = fmt.Sprintf("%s%s", s, " ")
@@ -91,25 +81,26 @@ func (g *Grid) String() string {
 	return s
 }
 
-func (g *Grid) copy() *Grid {
-	tmpGrid := &Grid{}
-	tmpGrid.Raws = make([]Raw, InitY)
+func (g *Grid) Serialize() {
 
-	for y := 0; y < InitY; y++ {
-		tmpGrid.Raws[y].Columns = make([]Column, InitX)
-		for x := 0; x < InitX; x++ {
-			tmpGrid.Raws[y].Columns[x].Cell = &Cell{
-				State:  g.Raws[y].Columns[x].Cell.State,
-				grid:   tmpGrid,
-				row:    y,
-				column: x,
+}
+
+func (g Grid) copy() Grid {
+	tmpGrid := make(Grid, InitX)
+
+	for x := 0; x < InitX; x++ {
+		tmpGrid[x] = make([]Cell, InitY)
+		for y := 0; y < InitY; y++ {
+			tmpGrid[x][y] = Cell{
+				State: g[x][y].State,
+				grid:  tmpGrid,
 			}
 		}
 	}
 
 	for y := 0; y < InitY; y++ {
 		for x := 0; x < InitX; x++ {
-			tmpGrid.Raws[y].Columns[x].Cell.initNeighbours()
+			tmpGrid[x][y].initNeighbours()
 		}
 	}
 

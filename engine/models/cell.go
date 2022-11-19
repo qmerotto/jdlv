@@ -1,14 +1,10 @@
 package models
 
-import (
-	"math/rand"
-)
-
 type Cell struct {
-	grid       *Grid
+	grid       Grid
 	neighbours []*Cell
-	row        int
-	column     int
+	y          int
+	x          int
 	State      CellState
 }
 
@@ -18,11 +14,11 @@ type CellState struct {
 	Temperature int
 }
 
-func DefaultCell(x, y int, g *Grid) *Cell {
-	return &Cell{
-		row:    y,
-		column: x,
-		grid:   g,
+func DefaultCell(x, y int, g Grid) Cell {
+	return Cell{
+		y:    y,
+		x:    x,
+		grid: g,
 		State: CellState{
 			Alive:       false,
 			Fuel:        0,
@@ -31,59 +27,48 @@ func DefaultCell(x, y int, g *Grid) *Cell {
 	}
 }
 
-func (c *Cell) initState(grid *Grid) {
-	c.State = CellState{
-		Alive:       rand.Intn(2)%2 == 0,
-		Fuel:        rand.Intn(100),
-		Temperature: 20,
-	}
-	c.grid = grid
-
-	c.initNeighbours()
-}
-
 func (c *Cell) initNeighbours() {
 	//TODO 8 voisins...
 	c.neighbours = make([]*Cell, 8)
 
 	//N
-	if c.row-1 >= 0 {
-		c.neighbours[0] = c.grid.Raw(c.row - 1).Column(c.column)
+	if c.y-1 >= 0 {
+		c.neighbours[0] = &c.grid[c.x][c.y-1]
 	}
 
 	//NE
-	if c.row-1 >= 0 && c.column+1 < InitX {
-		c.neighbours[1] = c.grid.Raw(c.row - 1).Column(c.column + 1)
+	if c.y-1 >= 0 && c.x+1 < InitX {
+		c.neighbours[1] = &c.grid[c.x+1][c.y-1]
 	}
 
 	//E
-	if c.column+1 < InitX {
-		c.neighbours[2] = c.grid.Raw(c.row).Column(c.column + 1)
+	if c.x+1 < InitX {
+		c.neighbours[2] = &c.grid[c.x+1][c.y]
 	}
 
 	//SE
-	if c.row+1 < InitY && c.column+1 < InitX {
-		c.neighbours[3] = c.grid.Raw(c.row + 1).Column(c.column + 1)
+	if c.y+1 < InitY && c.x+1 < InitX {
+		c.neighbours[3] = &c.grid[c.x+1][c.y+1]
 	}
 
 	//S
-	if c.row+1 < InitY {
-		c.neighbours[4] = c.grid.Raw(c.row + 1).Column(c.column)
+	if c.y+1 < InitY {
+		c.neighbours[4] = &c.grid[c.x][c.y+1]
 	}
 
 	//SO
-	if c.row+1 < InitY && c.column-1 >= 0 {
-		c.neighbours[5] = c.grid.Raw(c.row + 1).Column(c.column - 1)
+	if c.y+1 < InitY && c.x-1 >= 0 {
+		c.neighbours[5] = &c.grid[c.x-1][c.y+1]
 	}
 
 	//O
-	if c.column-1 >= 0 {
-		c.neighbours[6] = c.grid.Raw(c.row).Column(c.column - 1)
+	if c.x-1 >= 0 {
+		c.neighbours[6] = &c.grid[c.x-1][c.y]
 	}
 
 	//NO
-	if c.row-1 >= 0 && c.column-1 >= 0 {
-		c.neighbours[7] = c.grid.Raw(c.row - 1).Column(c.column - 1)
+	if c.y-1 >= 0 && c.x-1 >= 0 {
+		c.neighbours[7] = &c.grid[c.x-1][c.y-1]
 	}
 }
 
