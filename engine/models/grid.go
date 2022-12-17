@@ -7,8 +7,8 @@ import (
 type Grid [][]Cell
 
 var currentGrid = make(Grid, 0)
-var InitX = 100
-var InitY = 100
+var InitX = 10
+var InitY = 10
 
 func init() {
 	grid := NewGrid()
@@ -39,22 +39,22 @@ func (g Grid) build() {
 		}
 	}
 
-	for x := 0; x < InitX; x++ {
-		for y := 0; y < InitY; y++ {
-			g[x][y].initNeighbours()
-		}
-	}
+	g.initCellsNeighbours()
 
 	fmt.Print("build\n")
 	fmt.Print(g.String())
 }
 
+func (g Grid) Reinitialize() {
+	g.build()
+}
+
 func (g Grid) Actualize() {
-	tmpGrid := g.copy()
+	copyGrid := g.copy()
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
-			g[x][y].Actualize(tmpGrid[x][y].AliveNeighbours())
+			g[x][y] = copyGrid[x][y].Actualize()
 		}
 	}
 	g.Print()
@@ -86,23 +86,29 @@ func (g *Grid) Serialize() {
 }
 
 func (g Grid) copy() Grid {
-	tmpGrid := make(Grid, InitX)
+	copyGrid := make(Grid, InitX)
 
 	for x := 0; x < InitX; x++ {
-		tmpGrid[x] = make([]Cell, InitY)
+		copyGrid[x] = make([]Cell, InitY)
 		for y := 0; y < InitY; y++ {
-			tmpGrid[x][y] = Cell{
+			copyGrid[x][y] = Cell{
+				X:     g[x][y].X,
+				Y:     g[x][y].Y,
 				State: g[x][y].State,
-				grid:  tmpGrid,
+				grid:  copyGrid,
 			}
 		}
 	}
 
+	copyGrid.initCellsNeighbours()
+
+	return copyGrid
+}
+
+func (g Grid) initCellsNeighbours() {
 	for y := 0; y < InitY; y++ {
 		for x := 0; x < InitX; x++ {
-			tmpGrid[x][y].initNeighbours()
+			g[x][y].initNeighbours()
 		}
 	}
-
-	return tmpGrid
 }
