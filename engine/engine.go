@@ -9,26 +9,26 @@ import (
 
 var start = make(chan struct{})
 var stop = make(chan struct{})
-var Running = false
+var running = false
 
 func Start() error {
-	if Running {
-		return fmt.Errorf("cannot start")
+	if running {
+		return fmt.Errorf("already started")
 	}
 
 	start <- struct{}{}
-	Running = true
+	running = true
 
 	return nil
 }
 
 func Stop() error {
-	if !Running {
-		return fmt.Errorf("cannot stop")
+	if !running {
+		return fmt.Errorf("not running")
 	}
 
 	stop <- struct{}{}
-	Running = false
+	running = false
 
 	return nil
 }
@@ -41,6 +41,10 @@ func Run(ctx context.Context) {
 		<-stop
 		cancel()
 	}
+}
+
+func IsRunning() bool {
+	return running
 }
 
 func work(ctx context.Context) {

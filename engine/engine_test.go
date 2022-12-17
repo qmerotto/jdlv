@@ -15,5 +15,5 @@ func TestActualize(t *testing.T) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	Start(ctx)
+	Start()
 }
