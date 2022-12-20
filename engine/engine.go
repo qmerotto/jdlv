@@ -64,15 +64,21 @@ func (e *engine) Run(ctx context.Context) {
 	}
 }
 
-func (e *engine) StartGame(game models.Game) {
+func (e *engine) StartGame(game models.Game) error {
 	e.games <- game
+
+	return nil
 }
 
-func (e *engine) StopGame(game models.Game) {
+func (e *engine) StopGame(game models.Game) error {
 	cancelFunc, ok := e.cancels[game.UUID]
 	if ok {
 		cancelFunc()
+		delete(e.cancels, game.UUID)
+		return nil
 	}
+
+	return fmt.Errorf("stop game error")
 }
 
 func (e *engine) work(ctx context.Context) {
@@ -90,6 +96,11 @@ func (e *engine) work(ctx context.Context) {
 	}
 }
 
+func (e *engine) cancelAllGames() {
+	for _, cancel := range e.cancels {
+		cancel()
+	}
+}
 func (e *engine) IsRunning() bool {
 	return e.running
 }

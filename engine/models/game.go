@@ -9,8 +9,8 @@ import (
 )
 
 type Game struct {
-	UUID    uuid.UUID
-	Grid    Grid
+	UUID    uuid.UUID `json:"uuid"`
+	Grid    Grid      `json:"grid"`
 	Rules   []Rule
 	Running bool
 	User    uuid.UUID

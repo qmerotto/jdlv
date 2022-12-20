@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go engine.Run(ctx)
+	instance := engine.Instance()
+	go instance.Run(ctx)
 	server.Run(ctx)
 }
