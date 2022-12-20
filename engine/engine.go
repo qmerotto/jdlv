@@ -3,65 +3,93 @@ package engine
 import (
 	"context"
 	"fmt"
+	uuid "github.com/jackc/pgtype/ext/gofrs-uuid"
 	"jdlv/engine/models"
 	"time"
 )
 
-var start = make(chan struct{})
-var stop = make(chan struct{})
-var running = false
+var instance engine
 
-func Start() error {
-	if running {
+type engine struct {
+	games   chan models.Game
+	cancels map[uuid.UUID]context.CancelFunc
+	running bool
+	start   chan struct{}
+	stop    chan struct{}
+}
+
+func init() {
+	instance = engine{
+		games:   make(chan models.Game),
+		cancels: map[uuid.UUID]context.CancelFunc{},
+		running: false,
+		start:   make(chan struct{}),
+		stop:    make(chan struct{}),
+	}
+}
+
+func Instance() *engine {
+	return &instance
+}
+
+func (e *engine) Start() error {
+	if e.running {
 		return fmt.Errorf("already started")
 	}
 
-	start <- struct{}{}
-	running = true
+	e.start <- struct{}{}
+	e.running = true
 
 	return nil
 }
 
-func Stop() error {
-	if !running {
+func (e *engine) Stop() error {
+	if !e.running {
 		return fmt.Errorf("not running")
 	}
 
-	stop <- struct{}{}
-	running = false
+	e.stop <- struct{}{}
+	e.running = false
 
 	return nil
 }
 
-func Run(ctx context.Context) {
+func (e *engine) Run(ctx context.Context) {
 	for {
-		<-start
+		<-e.start
 		currentCtx, cancel := context.WithCancel(ctx)
-		go work(currentCtx)
-		<-stop
+		go e.work(currentCtx)
+		<-e.stop
 		cancel()
 	}
 }
 
-func IsRunning() bool {
-	return running
+func (e *engine) StartGame(game models.Game) {
+	e.games <- game
 }
 
-func work(ctx context.Context) {
-	fmt.Println("engine at work")
+func (e *engine) StopGame(game models.Game) {
+	cancelFunc, ok := e.cancels[game.UUID]
+	if ok {
+		cancelFunc()
+	}
+}
 
-	ticker := time.NewTicker(5 * time.Second)
-
+func (e *engine) work(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("stop engine")
 			return
-		case t := <-ticker.C:
-			models.CurrentGrid().Actualize()
-			fmt.Println("Tick at", t)
+		case game := <-e.games:
+			gameCtx, gameCancel := context.WithCancel(ctx)
+			e.cancels[game.UUID] = gameCancel
+			go game.Run(gameCtx)
 		default:
-			time.Sleep(100 * time.Microsecond)
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
+}
+
+func (e *engine) IsRunning() bool {
+	return e.running
 }

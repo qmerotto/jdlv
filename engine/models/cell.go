@@ -41,7 +41,6 @@ func DefaultCell(x, y int, g Grid) Cell {
 }
 
 func (c *Cell) initNeighbours() {
-	//TODO 8 voisins...
 	c.neighbours = make([]*Cell, 8)
 
 	//N
@@ -107,7 +106,7 @@ func (c *Cell) Alive() bool {
 	return c.State.Alive
 }
 
-func (c *Cell) Actualize() Cell {
+func (c *Cell) Actualize(rules []Rule) Cell {
 	res := Cell{
 		grid:       c.grid,
 		neighbours: c.neighbours,
@@ -116,13 +115,8 @@ func (c *Cell) Actualize() Cell {
 		State:      c.State,
 	}
 
-	n := c.AliveNeighbours()
-	if c.Alive() && (n == 2 || n == 3) {
-		res.State.Alive = true
-	} else if !c.Alive() && n == 3 {
-		res.State.Alive = true
-	} else {
-		res.State.Alive = false
+	for _, rule := range rules {
+		rule(c)
 	}
 
 	return res

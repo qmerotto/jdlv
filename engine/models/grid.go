@@ -49,12 +49,12 @@ func (g Grid) Reinitialize() {
 	g.build()
 }
 
-func (g Grid) Actualize() {
+func (g Grid) Actualize(rules []Rule) {
 	copyGrid := g.copy()
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
-			g[x][y] = copyGrid[x][y].Actualize()
+			g[x][y] = copyGrid[x][y].Actualize(rules)
 		}
 	}
 	g.Print()
