@@ -117,15 +117,11 @@ func (c *Cell) Actualize() Cell {
 	}
 
 	n := c.AliveNeighbours()
-	if n < 1 {
-		res.State.Alive = false
-	}
-
-	if !c.Alive() && n >= 3 {
+	if c.Alive() && (n == 2 || n == 3) {
 		res.State.Alive = true
-	}
-
-	if n >= 5 {
+	} else if !c.Alive() && n == 3 {
+		res.State.Alive = true
+	} else {
 		res.State.Alive = false
 	}
 
