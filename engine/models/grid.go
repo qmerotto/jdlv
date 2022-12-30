@@ -6,30 +6,16 @@ import (
 
 type Grid [][]Cell
 
-var currentGrid = make(Grid, 0)
 var InitX = 10
 var InitY = 10
 
-func init() {
-	grid := NewGrid()
-	grid.build()
-}
-
-func NewGrid() Grid {
-	if len(currentGrid) > 0 {
-		return currentGrid
-	}
-
-	currentGrid = make(Grid, InitX)
+func NewGrid(x, y int) Grid {
+	newGrid := make(Grid, x)
 	for x := 0; x < InitX; x++ {
-		currentGrid[x] = make([]Cell, InitY)
+		newGrid[x] = make([]Cell, y)
 	}
 
-	return currentGrid
-}
-
-func CurrentGrid() Grid {
-	return currentGrid
+	return newGrid
 }
 
 func (g Grid) build() {
@@ -69,7 +55,7 @@ func (g Grid) String() string {
 
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
-			if currentGrid[x][y].State.Alive {
+			if g[x][y].State.Alive {
 				s = fmt.Sprintf("%s%s", s, "X")
 			} else {
 				s = fmt.Sprintf("%s%s", s, " ")
@@ -79,10 +65,6 @@ func (g Grid) String() string {
 	}
 
 	return s
-}
-
-func (g *Grid) Serialize() {
-
 }
 
 func (g Grid) copy() Grid {

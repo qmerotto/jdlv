@@ -14,7 +14,7 @@ type GetGridOuput struct {
 }
 
 func GetGrid(c *gin.Context) {
-	c.JSON(200, GetGridOuput{Grid: models.CurrentGrid()})
+	//c.JSON(200, GetGridOuput{Grid: models.CurrentGrid()})
 }
 
 type cellsInput struct {
@@ -40,10 +40,10 @@ func SetCells(c *gin.Context) {
 		c.AbortWithStatus(500)
 	}
 
-	grid := models.CurrentGrid()
+	/*grid := models.CurrentGrid()
 	for _, cell := range setCellsInput.Cells {
 		grid[cell.X][cell.Y].State.Alive = true
-	}
+	}*/
 
 	c.JSON(200, []byte(`{"status": "ok"}`))
 }

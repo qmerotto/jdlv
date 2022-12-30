@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"jdlv/engine"
-	"jdlv/engine/models"
 	"jdlv/server/controllers"
 	"net/http"
 	"time"
@@ -40,7 +39,6 @@ func Run(ctx context.Context) {
 }
 
 func reinitialize(c *gin.Context) {
-	models.CurrentGrid().Reinitialize()
 	c.JSON(200, "success")
 }
 

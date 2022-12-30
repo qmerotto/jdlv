@@ -12,5 +12,9 @@ func main() {
 
 	instance := engine.Instance()
 	go instance.Run(ctx)
+	if err := instance.Start(); err != nil {
+		panic(err)
+	}
+
 	server.Run(ctx)
 }

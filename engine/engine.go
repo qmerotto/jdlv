@@ -3,7 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
-	uuid "github.com/jackc/pgtype/ext/gofrs-uuid"
+	"github.com/google/uuid"
 	"jdlv/engine/models"
 	"time"
 )
@@ -11,7 +11,7 @@ import (
 var instance engine
 
 type engine struct {
-	games   chan models.Game
+	games   chan *models.Game
 	cancels map[uuid.UUID]context.CancelFunc
 	running bool
 	start   chan struct{}
@@ -20,7 +20,7 @@ type engine struct {
 
 func init() {
 	instance = engine{
-		games:   make(chan models.Game),
+		games:   make(chan *models.Game),
 		cancels: map[uuid.UUID]context.CancelFunc{},
 		running: false,
 		start:   make(chan struct{}),
@@ -64,13 +64,14 @@ func (e *engine) Run(ctx context.Context) {
 	}
 }
 
-func (e *engine) StartGame(game models.Game) error {
+func (e *engine) StartGame(game *models.Game) error {
 	e.games <- game
+	game.Running = true
 
 	return nil
 }
 
-func (e *engine) StopGame(game models.Game) error {
+func (e *engine) StopGame(game *models.Game) error {
 	cancelFunc, ok := e.cancels[game.UUID]
 	if ok {
 		cancelFunc()
