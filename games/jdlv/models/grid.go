@@ -15,6 +15,8 @@ func NewGrid(x, y int) Grid {
 		newGrid[x] = make([]Cell, y)
 	}
 
+	newGrid.build()
+
 	return newGrid
 }
 

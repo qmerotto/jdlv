@@ -3,7 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"io/ioutil"
-	"jdlv/engine/models"
+	"jdlv/games/jdlv/models"
 	"log"
 
 	"github.com/gin-gonic/gin"

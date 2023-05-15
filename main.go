@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	//grpc.BuildProtos()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

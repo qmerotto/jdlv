@@ -1,9 +1,10 @@
 package models
 
 import (
+	"testing"
+
 	"github.com/go-playground/assert/v2"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type AliveCellsSuite struct {
@@ -23,29 +24,29 @@ func TestAliveCellsSuite(t *testing.T) {
 
 func (suite *AliveCellsSuite) TestIsolation() {
 	suite.LivingCell.neighbours = livingCells(1)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 }
 
 func (suite *AliveCellsSuite) TestOverpopulation() {
 	suite.LivingCell.neighbours = livingCells(4)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 
 	suite.LivingCell.neighbours = livingCells(5)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 
 	suite.LivingCell.neighbours = livingCells(6)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 
 	suite.LivingCell.neighbours = livingCells(7)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 
 	suite.LivingCell.neighbours = livingCells(8)
-	defaultRule(&suite.LivingCell)
+	DefaultRule(&suite.LivingCell)
 	assert.Equal(suite.T(), false, suite.LivingCell.State.Alive)
 }
 
@@ -66,37 +67,37 @@ func TestDeadCellsSuite(t *testing.T) {
 
 func (suite *DeadCellsSuite) TestRevival() {
 	suite.DeadCell.neighbours = livingCells(3)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), true, suite.DeadCell.State.Alive)
 }
 
 func (suite *DeadCellsSuite) TestUnchanged() {
 	suite.DeadCell.neighbours = livingCells(1)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(2)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(4)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(5)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(6)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(7)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 
 	suite.DeadCell.neighbours = livingCells(8)
-	defaultRule(&suite.DeadCell)
+	DefaultRule(&suite.DeadCell)
 	assert.Equal(suite.T(), false, suite.DeadCell.State.Alive)
 }
 
