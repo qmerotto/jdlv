@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package protos;
+
+option go_package = "jdlv/server/grpc/protos";
+
+service GridHandler {
+  rpc grid(input) returns (stream response) {}
+}
+
+message input {
+  int32 grid_id = 1;
+}
+
+message cell {
+  bool alive = 1;
+  uint32 fuel = 2;
+  int32 temperature = 3;
+}
+
+message column {
+  repeated cell cell = 1;
+}
+
+message grid {
+  repeated column column = 1;
+}
+
+message response {
+  grid grid = 1;
+}
+

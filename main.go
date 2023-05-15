@@ -7,10 +7,16 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	//grpc.BuildProtos()
+
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go engine.Run(ctx)
+	instance := engine.Instance()
+	go instance.Run(ctx)
+	if err := instance.Start(); err != nil {
+		panic(err)
+	}
+
 	server.Run(ctx)
 }
