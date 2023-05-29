@@ -30,7 +30,7 @@ func grid(w http.ResponseWriter, r *http.Request) {
 	for i := 0; true; i++ {
 
 		message := WSMEssage{
-			Event:   "gridUpadted",
+			Event:   "gridUpdated",
 			Payload: "aaaaaaa",
 		}
 		msgBytes, err := json.Marshal(message)
