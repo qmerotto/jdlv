@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"jdlv/server/controllers"
+	"jdlv/server/middleware"
 	"net/http"
 	"time"
 
@@ -20,6 +21,7 @@ func Run(ctx context.Context) {
 		MaxAge:        12 * time.Hour,
 	}))
 
+	r.Use(middleware.Auth)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -27,16 +29,18 @@ func Run(ctx context.Context) {
 	})
 
 	gameGroup := r.Group("/game")
-	gameGroup.POST("/start", controllers.StartGame)
-	gameGroup.POST("/stop", controllers.StopGame)
-	gameGroup.POST("/new", controllers.NewGame)
 	gameGroup.Handle("GET", "/grid", func(c *gin.Context) {
 		grid(c.Writer, c.Request)
 	})
+
+	gameGroup.POST("/start", controllers.StartGame)
+	gameGroup.POST("/stop", controllers.StopGame)
+	gameGroup.POST("/new", controllers.NewGame)
+
 	jdlvGroup := r.Group("/jdlv")
 	jdlvGroup.POST("/set_cells", controllers.SetCells)
 
-	//r.GET("/grid", controllers.GetGrid)
+	//r.GET("/grid", controllers.GetGrid)*/
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
