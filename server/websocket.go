@@ -1,7 +1,8 @@
 package server
 
 import (
-	"encoding/json"
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -15,9 +16,10 @@ var upgrader = websocket.Upgrader{
 	},
 } // use default options
 
-type WSMEssage struct {
-	Event   string      `json:"event"`
-	Payload interface{} `json:"payload"`
+type WSMessage struct {
+	Event      string      `json:"event"`
+	Payload    interface{} `json:"payload"`
+	UpdateTime time.Time   `json:"updateTime"`
 }
 
 func grid(w http.ResponseWriter, r *http.Request) {
@@ -27,23 +29,73 @@ func grid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
-	for i := 0; true; i++ {
 
-		message := WSMEssage{
-			Event:   "gridUpdated",
-			Payload: "aaaaaaa",
-		}
-		msgBytes, err := json.Marshal(message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+	ctx, cancel := context.WithCancel(r.Context())
+	chWrite := make(chan []byte)
 
-		err = c.WriteMessage(2, msgBytes)
-		if err != nil {
-			log.Println("write:", err)
-			break
+	go write(ctx, cancel, c, chWrite, time.Second)
+
+	//chRead := make(chan []byte)
+	//go read(ctx, cancel, c, chRead, time.Second)
+
+	<-ctx.Done()
+}
+
+func read(ctx context.Context, cancel context.CancelFunc, c *websocket.Conn, bodyChan chan []byte, duration time.Duration) {
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msgBytes := <-bodyChan:
+
+			if err := c.WriteMessage(2, msgBytes); err != nil {
+				log.Println("write:", err)
+				break
+			}
+		default:
+			msgType, bytes, err := c.ReadMessage()
+			if err != nil {
+				fmt.Printf("reading error: %s, message type: %d", err, msgType)
+			}
+
+			bodyChan <- bytes
+			time.Sleep(time.Second)
 		}
-		time.Sleep(time.Second)
+	}
+
+}
+
+/*
+tick := time.Tick(duration)
+
+message := WSMessage{
+	Event:      "gridUpdated",
+	Payload:    "aaaaaaa",
+	UpdateTime: t,
+}
+
+msgBytes, err := json.Marshal(message)
+if err != nil {
+	log.Println("write:", err)
+	break
+}*/
+
+func write(ctx context.Context, cancel context.CancelFunc, c *websocket.Conn, bodyChan chan []byte, duration time.Duration) {
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msgBytes := <-bodyChan:
+			if err := c.WriteMessage(2, msgBytes); err != nil {
+				log.Println("write:", err)
+				break
+			}
+		default:
+			time.Sleep(time.Second)
+		}
 	}
 }
