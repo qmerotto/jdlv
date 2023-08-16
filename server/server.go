@@ -4,7 +4,6 @@ import (
 	"context"
 	"jdlv/server/controllers"
 	"jdlv/server/middleware"
-	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -15,30 +14,25 @@ func Run(ctx context.Context) {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{"GET", "PUT", "PATCH"},
-		AllowHeaders:  []string{"Origin"},
+		AllowMethods:  []string{"GET", "PUT", "PATCH", "POST"},
+		AllowHeaders:  []string{"Origin", "Content-type"},
 		ExposeHeaders: []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Origin", "Content-type"},
 		MaxAge:        12 * time.Hour,
 	}))
 
 	r.Use(middleware.Auth)
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 
 	gameGroup := r.Group("/game")
 	gameGroup.Handle("GET", "/grid", func(c *gin.Context) {
 		grid(c.Writer, c.Request)
 	})
 
-	gameGroup.POST("/start", controllers.StartGame)
-	gameGroup.POST("/stop", controllers.StopGame)
 	gameGroup.POST("/new", controllers.NewGame)
+	gameGroup.POST("/token", controllers.CreateGameToken)
+	gameGroup.POST("/stop", controllers.StopGame)
 
-	jdlvGroup := r.Group("/jdlv")
-	jdlvGroup.POST("/set_cells", controllers.SetCells)
+	jdlvGroup := gameGroup.Group("/jdlv")
+	jdlvGroup.POST("/cell", controllers.SetCell)
 
 	//r.GET("/grid", controllers.GetGrid)*/
 

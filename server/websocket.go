@@ -2,11 +2,14 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"jdlv/engine"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -30,38 +33,57 @@ func grid(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	ctx, cancel := context.WithCancel(r.Context())
-	chWrite := make(chan []byte)
+	ctx := r.Context()
+	token, err := readAuth(ctx, c)
+	if err != nil {
+		panic(err)
+	}
 
-	go write(ctx, cancel, c, chWrite, time.Second)
+	if token != nil {
+		chWrite := make(chan []byte)
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		go write(ctx, c, chWrite, time.Second)
 
-	//chRead := make(chan []byte)
-	//go read(ctx, cancel, c, chRead, time.Second)
+		if err = engine.Instance().StartGame(*token, chWrite); err != nil {
+			return
+		}
+	}
 
 	<-ctx.Done()
 }
 
-func read(ctx context.Context, cancel context.CancelFunc, c *websocket.Conn, bodyChan chan []byte, duration time.Duration) {
+type authMessage struct {
+	Token string `json:"token"`
+}
+
+func readAuth(ctx context.Context, c *websocket.Conn) (*uuid.UUID, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return
-		case msgBytes := <-bodyChan:
-
-			if err := c.WriteMessage(2, msgBytes); err != nil {
-				log.Println("write:", err)
-				break
-			}
+			return nil, nil
 		default:
 			msgType, bytes, err := c.ReadMessage()
 			if err != nil {
 				fmt.Printf("reading error: %s, message type: %d", err, msgType)
+				return nil, err
 			}
 
-			bodyChan <- bytes
-			time.Sleep(time.Second)
+			if len(bytes) > 0 {
+				var authMsg authMessage
+				if err := json.Unmarshal(bytes, &authMsg); err != nil {
+					return nil, err
+				}
+
+				fmt.Printf("auth message: %v\n", authMsg)
+				token := uuid.MustParse(authMsg.Token)
+				return &token, nil
+			}
+
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 
@@ -82,20 +104,20 @@ if err != nil {
 	break
 }*/
 
-func write(ctx context.Context, cancel context.CancelFunc, c *websocket.Conn, bodyChan chan []byte, duration time.Duration) {
-	defer cancel()
+func write(ctx context.Context, c *websocket.Conn, bodyChan chan []byte, period time.Duration) {
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case msgBytes := <-bodyChan:
+			fmt.Printf("writing to websocket")
 			if err := c.WriteMessage(2, msgBytes); err != nil {
 				log.Println("write:", err)
 				break
 			}
 		default:
-			time.Sleep(time.Second)
+			time.Sleep(period)
 		}
 	}
 }

@@ -8,7 +8,7 @@ import (
 
 func Auth(c *gin.Context) {
 	authHeader := c.Request.Header.Get("Authorization")
-	fmt.Printf("authHeader")
+	fmt.Printf("authHeader: %s\n", authHeader)
 
 	if authHeader == "" {
 		c.Next()

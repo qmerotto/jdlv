@@ -2,6 +2,7 @@ package jdlv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"jdlv/games/jdlv/models"
 	"time"
@@ -10,12 +11,11 @@ import (
 )
 
 type Game struct {
-	UUID     uuid.UUID          `json:"uuid"`
-	Grid     models.Grid        `json:"grid"`
-	Rules    []models.Rule      `json:"-"`
-	Running  bool               `json:"-"`
-	UserUUID uuid.UUID          `json:"userUUID"`
-	cancel   context.CancelFunc `json:"-"`
+	UUID     uuid.UUID     `json:"uuid"`
+	Grid     models.Grid   `json:"grid"`
+	Rules    []models.Rule `json:"-"`
+	Running  bool          `json:"-"`
+	UserUUID uuid.UUID     `json:"userUuid"`
 }
 
 type InputNew struct {
@@ -36,17 +36,14 @@ func New(ctx context.Context, opts ...interface{}) (*Game, error) {
 		return nil, fmt.Errorf("invalid input")
 	}
 
-	gameUUID := uuid.New()
-	ctx, cancel := context.WithCancel(ctx)
 	newgame := Game{
-		UUID: gameUUID,
+		UUID: uuid.New(),
 		Grid: models.NewGrid(input.X, input.Y),
 		Rules: []models.Rule{
 			models.DefaultRule,
 		},
 		Running:  false,
 		UserUUID: input.UserUUID,
-		cancel:   cancel,
 	}
 
 	return &newgame, nil
@@ -56,7 +53,7 @@ func (g *Game) Uuid() uuid.UUID {
 	return g.UUID
 }
 
-func (g *Game) Start(ctx context.Context) error {
+func (g *Game) Start(ctx context.Context, output chan []byte) error {
 	defer func() error {
 		if e := recover(); e != nil {
 			return fmt.Errorf("%v", e)
@@ -65,13 +62,14 @@ func (g *Game) Start(ctx context.Context) error {
 		return nil
 	}()
 
-	g.run(ctx)
+	g.run(ctx, output)
 
 	return nil
 }
 
-func (g *Game) run(ctx context.Context) {
+func (g *Game) run(ctx context.Context, output chan []byte) {
 	fmt.Println("game at work")
+	g.Running = true
 
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -84,11 +82,34 @@ func (g *Game) run(ctx context.Context) {
 		case t := <-ticker.C:
 			fmt.Println("Before actualize", t.UnixMicro())
 			g.Grid.Actualize(g.Rules)
+			output <- g.dispatchGridUpdatedBody()
 			fmt.Println("After actualize", time.Now().UnixMicro())
 		default:
 			time.Sleep(time.Second)
 		}
 	}
+}
+
+type GridErrorEvent struct {
+	Event string `json:"event"`
+}
+
+type GridUpdatedEvent struct {
+	Event string      `json:"event"`
+	Grid  models.Grid `json:"grid"`
+}
+
+func (g *Game) dispatchGridUpdatedBody() []byte {
+	event := GridUpdatedEvent{
+		Event: "gridUpdated",
+		Grid:  g.Grid,
+	}
+	bodyBytes, err := json.Marshal(event)
+	if err != nil {
+		panic(err)
+	}
+
+	return bodyBytes
 }
 
 type SetCellInput struct {
@@ -97,6 +118,7 @@ type SetCellInput struct {
 	Y        int       `json:"y"`
 }
 
-func (g *Game) SetCell(params SetCellInput) {
+func (g *Game) SetCell(params SetCellInput) models.Cell {
 	g.Grid[params.X][params.Y].State.Alive = true
+	return g.Grid[params.X][params.Y]
 }

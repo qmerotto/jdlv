@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"jdlv/engine"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -44,10 +45,10 @@ func NewGame(c *gin.Context) {
 }
 
 type startInput struct {
-	GameUUID uuid.UUID `json:"gameUUID"`
+	GameUUID uuid.UUID `json:"gameUuid"`
 }
 
-func StartGame(c *gin.Context) {
+func CreateGameToken(c *gin.Context) {
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Printf(err.Error())
@@ -60,10 +61,16 @@ func StartGame(c *gin.Context) {
 		c.AbortWithStatus(500)
 	}
 
-	err = engine.Instance().StartGame(newStartParameters.GameUUID)
+	token, err := engine.Instance().CreateGameToken(newStartParameters.GameUUID)
 	if err != nil {
 		log.Printf(err.Error())
 		c.AbortWithStatus(500)
+	}
+
+	if token != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"token": &token,
+		})
 	}
 
 	return
@@ -93,6 +100,12 @@ func StopGame(c *gin.Context) {
 	}
 }
 
+type JDLVSetCellsInput struct {
+	GameUUID uuid.UUID `json:"gameUuid"`
+	X        int       `json:"x"`
+	Y        int       `json:"y"`
+}
+
 func JDLVSetCell(c *gin.Context) {
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
@@ -100,10 +113,22 @@ func JDLVSetCell(c *gin.Context) {
 		c.AbortWithStatus(500)
 	}
 
-	var newStopParameters stopInput
-	if err = json.Unmarshal(body, &newStopParameters); err != nil {
+	var newSetCellInput JDLVSetCellsInput
+	if err = json.Unmarshal(body, &newSetCellInput); err != nil {
 		log.Printf(err.Error())
 		c.AbortWithStatus(500)
 	}
 
+	updatedCell, err := engine.Instance().SetGridCell(engine.SetGridCellInput{
+		GameUUID: newSetCellInput.GameUUID,
+		UserUUID: userUUID,
+		X:        newSetCellInput.X,
+		Y:        newSetCellInput.Y,
+	})
+	if err != nil {
+		log.Printf(err.Error())
+		c.AbortWithStatus(500)
+	}
+
+	c.JSON(http.StatusOK, updatedCell)
 }

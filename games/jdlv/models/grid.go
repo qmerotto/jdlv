@@ -21,6 +21,7 @@ func NewGrid(x, y int) Grid {
 }
 
 func (g Grid) build() {
+	fmt.Print("Grid building...\n")
 	for x := 0; x < InitX; x++ {
 		for y := 0; y < InitY; y++ {
 			g[x][y] = DefaultCell(x, y, g)
@@ -29,8 +30,7 @@ func (g Grid) build() {
 
 	g.initCellsNeighbours()
 
-	fmt.Print("build\n")
-	fmt.Print(g.String())
+	fmt.Print("Grid built !\n")
 }
 
 func (g Grid) Reinitialize() {

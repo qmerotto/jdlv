@@ -34,7 +34,7 @@ func DefaultCell(x, y int, g Grid) Cell {
 		grid: g,
 		State: CellState{
 			Alive:       false,
-			Fuel:        0,
+			Fuel:        100,
 			Temperature: 20,
 		},
 	}
