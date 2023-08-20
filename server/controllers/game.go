@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"jdlv/engine"
 	"log"
@@ -49,7 +50,7 @@ type startInput struct {
 }
 
 func CreateGameToken(c *gin.Context) {
-	body, err := ioutil.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Printf(err.Error())
 		c.AbortWithStatus(500)
@@ -72,16 +73,14 @@ func CreateGameToken(c *gin.Context) {
 			"token": &token,
 		})
 	}
-
-	return
 }
 
 type stopInput struct {
-	gameUUID uuid.UUID
+	GameUUID uuid.UUID `json:"gameUuid"`
 }
 
 func StopGame(c *gin.Context) {
-	body, err := ioutil.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Printf(err.Error())
 		c.AbortWithStatus(500)
@@ -93,7 +92,7 @@ func StopGame(c *gin.Context) {
 		c.AbortWithStatus(500)
 	}
 
-	err = engine.Instance().StopGame(newStopParameters.gameUUID)
+	err = engine.Instance().StopGame(newStopParameters.GameUUID)
 	if err != nil {
 		log.Printf(err.Error())
 		c.AbortWithStatus(500)

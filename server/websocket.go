@@ -38,14 +38,17 @@ func grid(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	if token == nil {
+		return
+	}
 
 	if token != nil {
-		chWrite := make(chan []byte)
 		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
+
+		chWrite := make(chan []byte)
 		go write(ctx, c, chWrite, time.Second)
 
-		if err = engine.Instance().StartGame(*token, chWrite); err != nil {
+		if err = engine.Instance().StartGame(*token, cancel, chWrite); err != nil {
 			return
 		}
 	}
@@ -86,7 +89,6 @@ func readAuth(ctx context.Context, c *websocket.Conn) (*uuid.UUID, error) {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
-
 }
 
 /*

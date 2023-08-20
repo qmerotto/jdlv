@@ -150,7 +150,7 @@ func (e *engine) CreateGameToken(gameUUID uuid.UUID) (*uuid.UUID, error) {
 	return nil, fmt.Errorf("games %s doesnt exist", gameUUID.String())
 }
 
-func (e *engine) StartGame(token uuid.UUID, output chan []byte) error {
+func (e *engine) StartGame(token uuid.UUID, cancel context.CancelFunc, output chan []byte) error {
 	gameUUID := tokensMap[token]
 	if games[gameUUID] != nil {
 		gameChan <- gameChanMsg{
@@ -161,6 +161,8 @@ func (e *engine) StartGame(token uuid.UUID, output chan []byte) error {
 		fmt.Printf("games %s started !", gameUUID.String())
 		return nil
 	}
+
+	gameCancels[gameUUID] = cancel
 
 	return fmt.Errorf("games %s doesnt exist", gameUUID.String())
 }

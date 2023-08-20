@@ -60,8 +60,9 @@ func (g Grid) String() string {
 			if g[x][y].State.Alive {
 				s = fmt.Sprintf("%s%s", s, "X")
 			} else {
-				s = fmt.Sprintf("%s%s", s, " ")
+				s = fmt.Sprintf("%s%s", s, "O")
 			}
+			s = s + " "
 		}
 		s = fmt.Sprintf("%s%s", s, "\n")
 	}
